@@ -41,3 +41,8 @@ def test_cpf_str():
 
 def test_cpf_int():
     assert int(cpf(191)) == 191
+
+def test_cpf_format():
+    assert format(cpf(191)) == "000.000.001-91"
+    assert format(cpf(191), 'n') == "00000000191"
+    assert format(cpf(191), 'N') == "000000001/91"

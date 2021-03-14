@@ -137,5 +137,5 @@ class __cpf(object):
         if format_spec == 'n':
             return n        
         if format_spec == 'N':
-            return f"{n[:9]}/{n[9:]}",
+            return f"{n[:9]}/{n[9:]}"
         raise ValueError(f"Invalid format specifier")
