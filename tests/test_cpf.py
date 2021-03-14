@@ -40,4 +40,4 @@ def test_cpf_str():
     assert str(cpf("000.000.001-91")) == "000.000.001-91"
 
 def test_cpf_int():
-    assert int(cpf(191))
+    assert int(cpf(191)) == 191
