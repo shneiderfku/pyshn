@@ -10,6 +10,10 @@ def test_cnpj_str():
 def test_cnpj_int():
     assert int(cnpj(191)) == 191
 
+def test_cnpj_bool():
+    assert bool(cnpj(191, validate=False)) == True
+    assert bool(cnpj(190, validate=False)) == False
+
 def test_cnpj_from_number():
     assert repr(cnpj(191)) == "<cnpj 00000000000191>"
 
@@ -32,6 +36,10 @@ def test_cnpj_invalid_format():
         cnpj("00.000.000?0001-91")
     with pytest.raises(CnpjError, match="invalid format '?'."):
         cnpj("00.000.000/0001?91")
+
+def test_cnpj_invalid_number():
+    with pytest.raises(CnpjError, match="invalid number '?'"):
+        cnpj("00.000.000/0001-90")
 
 def test_cnpj_format():
     assert format(cnpj(191)) == "00.000.000/0001-91"

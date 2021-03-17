@@ -2,14 +2,25 @@
 # Entry Point
 #########################################################################################
 
-def cnpj(value:any):
+def cnpj(value:any, validate:bool = True):
     if not (isinstance(value, int) or isinstance(value, str)):
         raise _invalid_type(value)
-    return __cnpj(_parse(value))
+
+    ret = __cnpj(_parse(value))
+
+    if validate and not ret:
+        raise _invalid_number(value)
+    else:
+        return __cnpj(_parse(value))
 
 #########################################################################################
 # Helpers
 #########################################################################################
+
+def _calc(digits: str):
+    ret = lambda x, y: int(x) * (y - 8 if y - 8 > 1 else y)
+    mod = sum([ret(x, y) for x, y in zip(digits, range(len(digits) + 1, 1, -1))]) % 11
+    return 0 if mod < 2 else 11 - mod
 
 def _parse(value:any) -> str:
     if isinstance(value, int):
@@ -61,6 +72,9 @@ def _invalid_range(value:any, begin=1, end=99_999_999_999_999):
 def _invalid_format(value:any):
     raise CnpjError(f"cnpj: invalid format '{value}'")
 
+def _invalid_number(value:any):
+    raise CnpjError(f"cnpj: invalid number '{value}'")
+
 #########################################################################################
 # CNPJ Class
 #########################################################################################
@@ -71,6 +85,11 @@ class __cnpj:
     def __init__(self, number:int):
         self._number = number
     
+    def __bool__(self):
+        n = f"{self:n}"
+        return len(set(n)) != 1 and len(n) == 14 and \
+            int(n[12]) == _calc(n[:12]) and int(n[13]) == _calc(n[:13])
+
     def __repr__(self):
         return f"<cnpj {self._number:0>14}>"
 
