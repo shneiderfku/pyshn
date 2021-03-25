@@ -2,16 +2,16 @@
 # Entry Point
 #########################################################################################
 
-def cnpj(value:any, validate:bool = True):
+def cnpj(value:any, validate:bool = True, generate:bool = False):
     if not (isinstance(value, int) or isinstance(value, str)):
         raise _invalid_type(value)
 
-    ret = __cnpj(_parse(value))
+    ret = __cnpj(_parse(value, generate))
 
     if validate and not ret:
         raise _invalid_number(value)
     else:
-        return __cnpj(_parse(value))
+        return ret
 
 #########################################################################################
 # Helpers
@@ -22,11 +22,16 @@ def _calc(digits: str):
     mod = sum([ret(x, y) for x, y in zip(digits, range(len(digits) + 1, 1, -1))]) % 11
     return 0 if mod < 2 else 11 - mod
 
-def _parse(value:any) -> str:
+def _digits(value: int):
+    return ''.join([d for d in value if d.isdigit()])
+
+def _parse(value:any, generate:bool) -> str:
+    func = None
     if isinstance(value, int):
-        return _parse_from_number(value)
+        func = _generate_from_number if generate else _parse_from_number
     else:
-        return _parse_from_string(value)
+        func = _generate_from_string if generate else _parse_from_string
+    return func(value)
 
 def _parse_from_string(value:str) -> str:
     def fourteen():
@@ -42,7 +47,7 @@ def _parse_from_string(value:str) -> str:
         #   2   6   10   15
         #
         if value[2] == '.' and value[6] == '.' and value[10] == '/' and value[15] == '-':
-            return ''.join([d for d in value if d.isdigit()])
+            return _digits(value)
         raise _invalid_format(value)
 
     try:
@@ -55,6 +60,33 @@ def _parse_from_number(value:int) -> str:
         raise _invalid_range(value)
     else:
         return _parse_from_string(f"{value:0>14}")
+
+def _generate_from_string(value:str) -> int:
+    def twelve():
+        if value.isnumeric():
+            return value
+        raise _invalid_format(value)
+    
+    def fifthteen():
+        if value[2] == '.' and value[6] == '.' and value[10] == '/':
+            return _digits(value)
+        raise _invalid_format(value)
+
+    try:
+        value = { 12: twelve, 15: fifthteen }[len(value)]()
+    except KeyError as e:
+        raise _invalid_format(value) from e
+
+    value += str(_calc(value))
+    value += str(_calc(value))
+
+    return value
+
+def _generate_from_number(value:int) -> str:
+    if 1 < value > 999_999_999_999:
+        raise _invalid_number(value)
+    else:
+        return _generate_from_string(f"{value:0>12}")
 
 #########################################################################################
 # Errors
@@ -106,3 +138,6 @@ class __cnpj:
         if format_spec == 'n':
             return n
         raise CnpjError(f"cnpj: format not supported '{format_spec}'.")
+
+if __name__ == '__main__':
+    cnpj(1, generate=True)

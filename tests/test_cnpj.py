@@ -17,9 +17,16 @@ def test_cnpj_bool():
 def test_cnpj_from_number():
     assert repr(cnpj(191)) == "<cnpj 00000000000191>"
 
+def test_cnpj_generate_from_number():
+    assert repr(cnpj(1, generate=True)) == "<cnpj 00000000000191>"
+
 def test_cnpj_from_string():
     assert repr(cnpj("00000000000191")) == "<cnpj 00000000000191>"
     assert repr(cnpj("00.000.000/0001-91")) == "<cnpj 00000000000191>"
+
+def test_cnpj_generate_from_string():
+    assert repr(cnpj("000000000001", generate=True)) == "<cnpj 00000000000191>"
+    assert repr(cnpj("00.000.000/0001", generate=True)) == "<cnpj 00000000000191>"
 
 def test_cnpj_invalid_argument():
     with pytest.raises(TypeError, match="cnpj: must be number or string, not '?'."):
